@@ -7,6 +7,7 @@ import cn.cleir.home.domain.Result;
 import cn.cleir.home.repository.BusRepository;
 import cn.cleir.home.repository.CarRespository;
 import cn.cleir.home.repository.ExpressRepository;
+import cn.cleir.home.until.APIResultUntil;
 import cn.cleir.home.until.HttpUtils;
 import cn.cleir.home.until.ResultUtil;
 import com.alibaba.fastjson.JSON;
@@ -69,7 +70,6 @@ public class HomeService {
             e.printStackTrace();
             return ResultUtil.fail(-1,"服务器未知错误");
         }
-
     }
 
     /**
@@ -145,4 +145,39 @@ public class HomeService {
         }
 
     }
+
+    public Result getSub(String city,String address){
+        String host = "https://jisugjdt.market.alicloudapi.com";
+        String path = "/transit/nearby";
+        String method = "GET";
+        Map<String, String> querys = new HashMap<String, String>();
+        querys.put("address", address);
+        querys.put("city", city);
+        JSONObject resultJson = APIResultUntil.apiSend(host,path,method,querys);
+        if(resultJson==null){
+            return ResultUtil.fail(-1,"服务器未知错误发生");
+        }
+        else if(resultJson.getInteger("status") == 0){
+            return ResultUtil.success(resultJson.get("result"));
+        }else{
+            return ResultUtil.fail(resultJson.getInteger("status"), resultJson.getString("msg"));
+        }
+    }
+
+    public Result getWeChatHot(String resultCode,String resultMsg){
+        String host = "http://ali-weixin-hot.showapi.com";
+        String path = "/articleDetalList";
+        String method = "GET";
+        Map<String, String> querys = new HashMap<String, String>();
+        JSONObject resultJson = APIResultUntil.apiSend(host,path,method,querys);
+        if(resultJson==null){
+            return ResultUtil.fail(-1,"服务器未知错误发生");
+        }
+        else if(resultJson.getInteger(resultCode) == 0){
+            return ResultUtil.success(resultJson.get(resultMsg));
+        }else{
+            return ResultUtil.fail(resultJson.getInteger(resultCode), resultJson.getString(resultMsg));
+        }
+    }
+
 }
